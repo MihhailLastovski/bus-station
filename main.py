@@ -23,7 +23,17 @@ class RouteList(Resource):
     @api.marshal_with(route_model, envelope='routes')
     def get(self):
         return routes
-
+    
+@api.route('/routes/<int:id>')
+class Route(Resource):
+    @api.marshal_with(route_model)
+    def get(self, id):
+        for route in routes:
+            if route['id'] == id:
+                return route
+        api.abort(404, message=f'Route with ID {id} not found')
+        
+        
 @api.errorhandler(Exception)
 def handle_error(error):
     return {'message': 'Bad Request'}, 400
