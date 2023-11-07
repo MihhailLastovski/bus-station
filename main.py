@@ -48,6 +48,17 @@ class Route(Resource):
                 return '', 200
         api.abort(404, message=f'Route with ID {id} not found')
         
+    @api.expect(route_model)
+    @api.marshal_with(route_model, code=200)
+    def put(self, id):
+        for route in routes:
+            if route['id'] == id:
+                updated_route = api.payload
+                updated_route['id'] = id
+                routes[id - 1] = updated_route
+                return updated_route, 200  
+        api.abort(404, message=f'Route with ID {id} not found')
+        
 @api.errorhandler(Exception)
 def handle_error(error):
     return {'message': 'Bad Request'}, 400
