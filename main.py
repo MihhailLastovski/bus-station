@@ -40,6 +40,13 @@ class Route(Resource):
                 return route
         api.abort(404, message=f'Route with ID {id} not found')
         
+    @api.marshal_with(route_model)
+    def delete(self, id):
+        for route in routes:
+            if route['id'] == id:
+                routes.remove(route)
+                return '', 200
+        api.abort(404, message=f'Route with ID {id} not found')
         
 @api.errorhandler(Exception)
 def handle_error(error):
