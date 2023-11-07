@@ -23,6 +23,13 @@ class RouteList(Resource):
     @api.marshal_with(route_model, envelope='routes')
     def get(self):
         return routes
+    @api.expect(route_model)
+    @api.marshal_with(route_model, code=201)
+    def post(self):
+        route = api.payload
+        route['id'] = len(routes) + 1
+        routes.append(route)
+        return route, 201
     
 @api.route('/routes/<int:id>')
 class Route(Resource):
