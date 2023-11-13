@@ -1,9 +1,20 @@
-from flask import Flask, request
+import yaml  
+from flask import Flask, render_template, send_from_directory, request
 from flask_restx import Api, Resource, fields
+from flask_cors import CORS
+from flasgger import Swagger
 
 app = Flask(__name__)
+CORS(app)
 api = Api(app, version='1.0', title='Bus Station Management System API',
           description='API for managing bus routes at the bus station')
+
+
+with open('./docs/swagger.yaml', 'r') as file:
+    swagger_document = yaml.safe_load(file)
+
+swagger = Swagger(app, template=swagger_document)
+
 
 routes = [
     {'id': 1, 'departure_location': 'City A', 'destination': 'City B', 'departure_time': '01.01.2023 08:00'},
@@ -26,7 +37,16 @@ class RouteList(Resource):
     @api.expect(route_model)
     @api.marshal_with(route_model, code=201)
     def post(self):
-        route = api.payload
+        content_type = request.headers.get('Content-Type')
+        if 'application/json' in content_type:
+            route = request.get_json(force=True)
+        else:
+            route = {
+                'departure_location': request.form.get('departure_location'),
+                'destination': request.form.get('destination'),
+                'departure_time': request.form.get('departure_time')
+            }
+
         route['id'] = len(routes) + 1
         routes.append(route)
         return route, 201
@@ -49,19 +69,30 @@ class Route(Resource):
         api.abort(404, message=f'Route with ID {id} not found')
         
     @api.expect(route_model)
+    @api.doc(params={'id': 'ID of the route', 'departure_location': 'Departure Location', 'destination': 'Destination', 'departure_time': 'Departure Time in dd.mm.yyyy hh:min format (e.g., 01.01.2023 08:00)'})
     @api.marshal_with(route_model, code=200)
     def put(self, id):
         for route in routes:
             if route['id'] == id:
-                updated_route = api.payload
-                updated_route['id'] = id
+                updated_route = {
+                    'id': id,
+                    'departure_location': request.form.get('departure_location'),
+                    'destination': request.form.get('destination'),
+                    'departure_time': request.form.get('departure_time')
+                }
                 routes[id - 1] = updated_route
-                return updated_route, 200  
+                return updated_route, 200
         api.abort(404, message=f'Route with ID {id} not found')
-        
+
 @api.errorhandler(Exception)
 def handle_error(error):
     return {'message': 'Bad Request'}, 400
+
+
+@app.route('/apidocs/')
+def apidocs():
+    return render_template('swaggerui.html')
+
 
 if __name__ == '__main__':
     app.run(debug=True)
