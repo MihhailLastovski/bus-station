@@ -9,11 +9,7 @@ CORS(app)
 api = Api(app, version='1.0', title='Bus Station Management System API',
           description='API for managing bus routes at the bus station')
 
-
-with open('./docs/swagger.yaml', 'r') as file:
-    swagger_document = yaml.safe_load(file)
-
-swagger = Swagger(app, template=swagger_document)
+swagger = Swagger(app, template=yaml.safe_load(open('./docs/swagger.yaml', 'r')))
 
 
 routes = [
