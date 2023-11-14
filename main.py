@@ -1,5 +1,5 @@
 import yaml  
-from flask import Flask, render_template, send_from_directory, request
+from flask import Flask, render_template, request
 from flask_restx import Api, Resource, fields
 from flask_cors import CORS
 from flasgger import Swagger
