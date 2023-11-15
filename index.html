@@ -31,8 +31,26 @@
                 </div>
                 <div class="modal-body" id="modalBody">
                 </div>
+                <div class="container mt-4">
+                    <h2>Update Route</h2>
+                    <form>                      
+                        <div class="mb-3">
+                            <label for="departureLocation">Departure Location:</label>
+                            <input type="text" class="form-control" id="departureLocation" placeholder="Enter Departure Location">
+                        </div>
+                        <div class="mb-3">
+                            <label for="destination">Destination:</label>
+                            <input type="text" class="form-control" id="destination" placeholder="Enter Destination">
+                        </div>
+                        <div class="mb-3">
+                            <label for="departureTime">Departure Time:</label>
+                            <input type="text" class="form-control" id="departureTime" placeholder="Enter Departure Time">
+                        </div>
+                    </form>
+                </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="updateRouteInTable()">Update Route</button>
                 </div>
             </div>
         </div>
@@ -55,11 +73,13 @@
             }
         }
 
-        function renderRoutes(routesData) {
+        function renderRoutes(routesData) 
+        {
             const routes = routesData.routes;
             routesTable.innerHTML = '';
         
-            routes.forEach(route => {
+            routes.forEach(route => 
+            {
                 const row = `
                     <tr data-bs-toggle="modal" data-bs-target="#routeInfoModal" onclick="displayRouteInfo(${route.id})">
                         <td>${route.departure_location}</td>
@@ -71,25 +91,115 @@
             });
         }
         
-        async function displayRouteInfo(routeId) {
+        async function displayRouteInfo(routeId) 
+        {
             try {
                 const response = await fetch(`http://localhost:5000/routes/${routeId}`);
                 const route = await response.json();
                 
                 const modalBody = document.getElementById('modalBody');
                 modalBody.innerHTML = `
+                    <div class="mb-3">
+                        <label for="routeId">Route ID:</label>
+                        <input type="text" class="form-control" id="routeId" readonly value="${route.id}">
+                    </div>
                     <table class="table table-striped">
-                        <tr><th>ID</th><td>${route.id}</td></tr>
                         <tr><th>Departure Location</th><td>${route.departure_location}</td></tr>
                         <tr><th>Destination</th><td>${route.destination}</td></tr>
                         <tr><th>Departure Time</th><td>${route.departure_time}</td></tr>
                     </table>
                 `;
-            } catch (error) {
+
+                document.getElementById('routeId').value = route.id;
+                document.getElementById('departureLocation').value = route.departure_location;
+                document.getElementById('destination').value = route.destination;
+                document.getElementById('departureTime').value = route.departure_time;
+            } 
+            catch (error)
+            {
                 console.error('Error fetching route information:', error);
             }
         }
-        
+
+
+        async function updateRouteInTable() 
+        {
+            const updatedRouteData = getFormData();
+            const routeId = updatedRouteData.id;
+
+            try 
+            {
+                const response = await fetch(`http://localhost:5000/routes/${routeId}`, 
+                {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updatedRouteData)
+                });
+
+                if (response.status === 200) 
+                {
+                    fetchRoutes();
+                    alert('Route updated successfully');
+
+                    document.getElementById('departureLocation').value = '';
+                    document.getElementById('destination').value = '';
+                    document.getElementById('departureTime').value = '';
+                } 
+                else 
+                {
+                    console.error('Failed to update route.');
+                }
+            } 
+            catch (error) 
+            {
+                console.error('Error updating route:', error);
+            }
+        }
+
+
+
+        async function updateRoute(routeId, updatedRouteData) 
+        {
+            try 
+            {
+                const response = await fetch(`http://localhost:5000/routes/${routeId}`, 
+                {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updatedRouteData)
+                });
+
+                if (response.status === 200) {
+                    fetchRoutes(); 
+                } else {
+                    console.error('Failed to update route.');
+                }
+            } 
+            catch (error) 
+            {
+                console.error('Error updating route:', error);
+            }
+        }
+
+        function getFormData() 
+        {
+            const id = document.getElementById('routeId').value;
+            const departureLocation = document.getElementById('departureLocation').value;
+            const destination = document.getElementById('destination').value;
+            const departureTime = document.getElementById('departureTime').value;
+
+            return {
+                id: parseInt(id),
+                departure_location: departureLocation,
+                destination: destination,
+                departure_time: departureTime
+            };
+        }
+
         fetchRoutes();
     </script>
 </body>

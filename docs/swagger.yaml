@@ -154,28 +154,28 @@ paths:
     put:
       requestBody:
         description: Updated route details
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/Route'
         required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Route'  
       tags:
         - update-route
       responses:
         '200':
+          description: Update a route
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Route'
-          description: Update a route
         '400':
           description: One or all params are missing
         '404':
+          description: Route not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-          description: Route not found
       summary: Update a route
       description: Update a route by given id
       parameters:
@@ -184,21 +184,12 @@ paths:
           required: true
           type: integer
           description: ID of the route
-        - name: departure_location
-          in: formData
-          type: string
+        - in: body
+          name: route
+          description: Route object
           required: true
-          description: Departure Location
-        - name: destination
-          in: formData
-          type: string
-          required: true
-          description: Destination
-        - name: departure_time
-          in: formData
-          type: string
-          required: true
-          description: Departure Time in dd.mm.yyyy hh:min format (e.g., 01.01.2023 08:00)
+          schema:
+            $ref: '#/components/schemas/Route'
 components:
   schemas:
     Route:

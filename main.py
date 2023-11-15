@@ -68,17 +68,15 @@ class Route(Resource):
     @api.doc(params={'id': 'ID of the route', 'departure_location': 'Departure Location', 'destination': 'Destination', 'departure_time': 'Departure Time in dd.mm.yyyy hh:min format (e.g., 01.01.2023 08:00)'})
     @api.marshal_with(route_model, code=200)
     def put(self, id):
+        updated_data = api.payload 
         for route in routes:
             if route['id'] == id:
-                updated_route = {
-                    'id': id,
-                    'departure_location': request.form.get('departure_location'),
-                    'destination': request.form.get('destination'),
-                    'departure_time': request.form.get('departure_time')
-                }
-                routes[id - 1] = updated_route
-                return updated_route, 200
+                route['departure_location'] = updated_data.get('departure_location', route['departure_location'])
+                route['destination'] = updated_data.get('destination', route['destination'])
+                route['departure_time'] = updated_data.get('departure_time', route['departure_time'])
+                return route, 200
         api.abort(404, message=f'Route with ID {id} not found')
+
 
 @api.errorhandler(Exception)
 def handle_error(error):
