@@ -24,4 +24,3 @@ Before you begin, make sure you have the following installed:
 
     The server will be launched at `http://localhost:5000` by default. You can change the host and port in the `main.py` file if necessary.
     The swagger documentation at `http://localhost:5000/apidocs`.
-

@@ -55,6 +55,24 @@
             </div>
         </div>
     </div>
+    <div class="container mt-4">    
+        <h2>Add New Route</h2>
+        <form id="addRouteForm">                      
+            <div class="mb-3">
+                <label for="newDepartureLocation">Departure Location:</label>
+                <input type="text" class="form-control" id="newDepartureLocation" placeholder="Enter Departure Location">
+            </div>
+            <div class="mb-3">
+                <label for="newDestination">Destination:</label>
+                <input type="text" class="form-control" id="newDestination" placeholder="Enter Destination">
+            </div>
+            <div class="mb-3">
+                <label for="newDepartureTime">Departure Time:</label>
+                <input type="text" class="form-control" id="newDepartureTime" placeholder="Enter Departure Time">
+            </div>
+            <button type="button" class="btn btn-primary" onclick="addNewRoute()">Add Route</button>
+        </form>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const routesTable = document.getElementById('routesTable');
@@ -121,7 +139,6 @@
             }
         }
 
-
         async function updateRouteInTable() 
         {
             const updatedRouteData = getFormData();
@@ -158,8 +175,6 @@
             }
         }
 
-
-
         async function updateRoute(routeId, updatedRouteData) 
         {
             try 
@@ -185,19 +200,71 @@
             }
         }
 
-        function getFormData() 
-        {
-            const id = document.getElementById('routeId').value;
-            const departureLocation = document.getElementById('departureLocation').value;
-            const destination = document.getElementById('destination').value;
-            const departureTime = document.getElementById('departureTime').value;
+        async function addNewRoute() {
+            const newRouteData = getFormData(true);
+            const isEmpty = Object.values(newRouteData).some(value => value === null || value === undefined || value.trim() === '');
+            if (isEmpty) {
+                alert('Please fill in all fields.');
+                return;
+            }
+            try 
+            {
+                const response = await fetch('http://localhost:5000/routes', 
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(newRouteData)
+                });
 
-            return {
-                id: parseInt(id),
+                if (response.status === 201) 
+                {
+                    fetchRoutes();
+                    alert('Route added successfully');
+
+                    document.getElementById('newDepartureLocation').value = '';
+                    document.getElementById('newDestination').value = '';
+                    document.getElementById('newDepartureTime').value = '';
+                } 
+                else 
+                {
+                    console.error('Failed to add route.');
+                }
+            } 
+            catch (error) 
+            {
+                console.error('Error adding route:', error);
+            }
+        }
+
+        function getFormData(isNewRoute) 
+        {
+            let id = null;
+            if (!isNewRoute) 
+            {
+                console.log(1)
+                id = document.getElementById('routeId').value;
+                console.log(2)
+            }
+
+            const departureLocation = isNewRoute ? document.getElementById('newDepartureLocation').value : document.getElementById('departureLocation').value;
+            const destination = isNewRoute ? document.getElementById('newDestination').value : document.getElementById('destination').value;
+            const departureTime = isNewRoute ? document.getElementById('newDepartureTime').value : document.getElementById('departureTime').value;
+
+            const formData = 
+            {
                 departure_location: departureLocation,
                 destination: destination,
                 departure_time: departureTime
             };
+
+            if (!isNewRoute) 
+            {
+                formData.id = parseInt(id);
+            }
+
+            return formData;
         }
 
         fetchRoutes();
