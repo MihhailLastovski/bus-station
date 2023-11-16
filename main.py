@@ -1,5 +1,5 @@
 import yaml  
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 from flask_restx import Api, Resource, fields
 from flask_cors import CORS
 from flasgger import Swagger
@@ -43,7 +43,8 @@ class RouteList(Resource):
                 'departure_time': request.form.get('departure_time')
             }
 
-        route['id'] = len(routes) + 1
+        max_id = max(route['id'] for route in routes) if routes else 0
+        route['id'] = max_id + 1
         routes.append(route)
         return route, 201
     
