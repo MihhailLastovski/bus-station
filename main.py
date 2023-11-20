@@ -1,9 +1,10 @@
 import yaml  
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, make_response
 from flask_restx import Api, Resource, fields
 from flask_cors import CORS
 from flasgger import Swagger
-
+import json
+import hashlib
 app = Flask(__name__)
 CORS(app)
 api = Api(app, version='1.0', title='Bus Station Management System API',
@@ -88,6 +89,63 @@ def handle_error(error):
 def apidocs():
     return render_template('swaggerui.html')
 
+
+#Login/Register
+def hash_password(password):
+    return hashlib.sha256(password.encode()).hexdigest()
+
+def load_users():
+    try:
+        with open('./data/users.json', 'r') as file:
+            return json.load(file)
+    except FileNotFoundError:
+        return {}
+
+def save_users(users):
+    with open('./data/users.json', 'w') as file:
+        json.dump(users, file)
+
+@app.route('/register', methods=['POST'])
+def register():
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+    role = data.get('role', 'regular') 
+
+    users = load_users()
+
+    if username in users:
+        return jsonify({"message": "User already exists"}), 400
+
+    hashed_password = hash_password(password)
+    users[username] = {
+        "username": username,
+        "password": hashed_password,
+        "role": role
+    }
+
+    save_users(users)
+    return jsonify({"message": "User registered successfully"}), 201
+
+@app.route('/login', methods=['POST'])
+def login():
+    auth = request.authorization
+    if not auth or not auth.username or not auth.password:
+        return make_response('Could not verify', 401, {'WWW-Authenticate': 'Basic realm="Login required!"'})
+
+    username = auth.username
+    password = auth.password
+
+    users = load_users()
+
+    if username not in users:
+        return jsonify({"message": "Invalid username"}), 401
+
+    hashed_password = hash_password(password)
+    if hashed_password == users[username]['password']:
+        return jsonify({"message": "Logged in successfully", "role": users[username]['role']}), 200
+
+    return jsonify({"message": "Invalid password"}), 401
 
 if __name__ == '__main__':
     app.run(debug=True)
