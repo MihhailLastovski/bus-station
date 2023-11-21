@@ -8,7 +8,7 @@
 </head>
 <body>
     <style>
-        .container.mt-5 {
+        .container.mt-5, #searchRegular, #sortRegular{
             display: none;
         }
     </style>
@@ -17,6 +17,17 @@
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#loginModal">Login</button>
         <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#registerModal">Register</button>
     </div>
+    <div class="container mt-4" id="searchRegular">
+        <div class="mb-3">
+            <label for="routeSearch">Search routes:</label>
+            <input type="text" class="form-control" id="routeSearch" placeholder="Enter route details" oninput="searchTable()">
+        </div>
+    </div>         
+    <div class="container mt-4" id="sortRegular">
+        <h2>Sort Routes</h2>
+        <button type="button" class="btn btn-primary" onclick="filterByTime()">Sort by Time</button>
+        <button type="button" class="btn btn-primary" onclick="filterAlphabetically()">Sort Alphabetically</button>
+    </div>    
     <div class="container mt-4">
         <h1>Bus Routes</h1>
         <table class="table table-striped">
@@ -392,9 +403,7 @@
             let id = null;
             if (!isNewRoute) 
             {
-                console.log(1)
                 id = document.getElementById('routeId').value;
-                console.log(2)
             }
 
             const departureLocation = isNewRoute ? document.getElementById('newDepartureLocation').value : document.getElementById('departureLocation').value;
@@ -439,7 +448,7 @@
                 {
                     alert(data.message);
                     fetchRoutes(username, password);
-                    toggleAddRouteBlock(data.role)
+                    toggleRouteBlock(data.role)
                 } 
                 else 
                 {
@@ -493,19 +502,109 @@
             registerUser(username, password, role);
         });
 
-        function toggleAddRouteBlock(userRole) {
+        function toggleRouteBlock(userRole) {
             const addRouteBlock = document.querySelector('.container.mt-5');
-        
+            const searchBlock = document.querySelector('#searchRegular');
+            const sortBlock = document.querySelector('#sortRegular');
+
             if (userRole !== 'employee') 
             {
                 addRouteBlock.style.display = 'none'; 
+                searchBlock.style.display = 'block'; 
+                sortBlock.style.display = 'block'; 
             } 
             else 
             {
                 addRouteBlock.style.display = 'block'; 
+                searchBlock.style.display = 'none'; 
+                sortBlock.style.display = 'none'; 
             }
         }
+
+        function searchTable() 
+        {
+            let input, filter, table, tr, td, i, j, txtValue;
+            input = document.getElementById("routeSearch");
+            filter = input.value.toUpperCase();
+            table = document.querySelector("table");
+            tr = table.getElementsByTagName("tr");
+            for (i = 1; i < tr.length; i++) 
+            {
+                let found = false;
+                for (j = 0; j < 3; j++) 
+                {
+                    td = tr[i].getElementsByTagName("td")[j];
+                    if (td) 
+                    {
+                        txtValue = td.textContent || td.innerText;
+                        if (txtValue.toUpperCase().indexOf(filter) > -1) 
+                        {
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+                if 
+                (found) 
+                {
+                    tr[i].style.display = "";
+                }
+                else 
+                {
+                    tr[i].style.display = "none";
+                }
+            }
+        }  
+        let sortByTimeAscending = true;
+        let sortAlphabeticallyAscending = true;
+
+        function filterByTime() 
+        {
+            const table = document.querySelector("table");
+            const rows = table.querySelectorAll("tbody tr");
         
+            const fragment = document.createDocumentFragment();
+            const sortedRows = Array.from(rows).sort((rowA, rowB) => 
+            {
+                const timeA = rowA.cells[2].innerText.toLowerCase().trim();
+                const timeB = rowB.cells[2].innerText.toLowerCase().trim();
+        
+                return sortByTimeAscending ? timeA.localeCompare(timeB) : timeB.localeCompare(timeA);
+            });
+        
+            sortedRows.forEach(row => 
+            {
+                fragment.appendChild(row);
+            });
+        
+            table.querySelector("tbody").appendChild(fragment);
+        
+            sortByTimeAscending = !sortByTimeAscending;
+        }
+
+        function filterAlphabetically() 
+        {
+            const table = document.querySelector("table");
+            const rows = Array.from(table.getElementsByTagName("tr")).slice(1); 
+        
+            const fragment = document.createDocumentFragment();
+            const sortedRows = rows.sort((rowA, rowB) => 
+            {
+                const textA = rowA.cells[0].innerText.toLowerCase().trim();
+                const textB = rowB.cells[0].innerText.toLowerCase().trim();
+        
+                return sortAlphabeticallyAscending ? textA.localeCompare(textB) : textB.localeCompare(textA);
+            });
+        
+            sortedRows.forEach(row => 
+            {
+                fragment.appendChild(row);
+            });
+        
+            table.querySelector("tbody").appendChild(fragment);
+        
+            sortAlphabeticallyAscending = !sortAlphabeticallyAscending;
+        }             
     </script>
 </body>
 </html>
