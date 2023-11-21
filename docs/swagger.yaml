@@ -190,6 +190,100 @@ paths:
           required: true
           schema:
             $ref: '#/components/schemas/Route'
+  /register:
+    post:
+      tags:
+        - user
+      summary: Register a new user
+      description: Endpoint to register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+                role:
+                  type: string
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: User already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+    parameters:  
+      - name: username
+        in: formData
+        type: string
+        required: true
+        description: User's username
+      - name: password
+        in: formData
+        type: string
+        required: true
+        description: User's password
+      - name: role
+        in: formData
+        type: string
+        required: true
+        description: User's role
+  /login:
+    post:
+      tags:
+        - user
+      summary: User login
+      description: Endpoint for user login
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: Logged in successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  role:
+                    type: string
+        '401':
+          description: Invalid username or password
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+    parameters:  
+      - name: username
+        in: formData
+        type: string
+        required: true
+        description: User's username
+      - name: password
+        in: formData
+        type: string
+        required: true
+        description: User's password
 components:
   schemas:
     Route:

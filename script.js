@@ -153,7 +153,7 @@ async function deleteRouteFromModal()
             const user = getUser();
             fetchRoutes(user.username, user.password);
             alert('Route deleted successfully');
-            
+            $('#routeInfoModal').modal('hide');
         } 
         else 
         {
@@ -221,6 +221,8 @@ async function updateRouteInTable()
             document.getElementById('departureLocation').value = '';
             document.getElementById('destination').value = '';
             document.getElementById('departureTime').value = '';
+
+            $('#routeInfoModal').modal('hide'); 
         } 
         else 
         {
